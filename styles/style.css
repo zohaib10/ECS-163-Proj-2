@@ -41,7 +41,6 @@ body{
 
 .axis line, .axis path {
 	fill: none;
-	stroke: white;
 	shape-rendering: crispEdges;
 }
 .view3 svg{
@@ -63,7 +62,7 @@ body{
 
 /* Dropdown button on hover & focus */
 .dropbtn:hover, .dropbtn:focus {
-    background-color: darkgreen;
+    background-color: lime;
 }
 
 /* The container <div> - needed to position the dropdown content */
@@ -90,7 +89,7 @@ body{
     font-size: 10px;
 }
 .dropdownContent a:hover {
-    background-color: darkgreen;
+    background-color: lime;
 }
 
 /* Change color of dropdown links on hover */
@@ -105,4 +104,96 @@ body{
     overflow-y: visible;
     background-color: lightgrey;
     margin-left: 13px;
+}
+.view2 button{
+    background-color: green;
+    border-width: 0px;
+    color: white;
+    font-size: 15px;
+    font-weight: 100;
+    border-radius: 10px;
+    display:none;
+}
+.view2 button:hover{
+    background-color: lime;
+    cursor: pointer;
+}
+
+.view2 p{
+    color: white;
+    margin-left: 85px;
+    border-style: solid;
+    border-color: green;
+    border-width: 1px;
+    padding: 3px;
+    background-color: green;
+    border-radius: 5px;
+    display: none;
+    font-weight: 100;
+    font-family: sans-serif;
+}
+
+.legend{
+    background-color: white;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.bar {
+  fill: orange;
+}
+
+.solidArc:hover {
+  fill: red ;
+}
+
+.solidArc {
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.aster-score { 
+  line-height: 1;
+  font-weight: bold;
+  font-size: 50px;
+}
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
 }

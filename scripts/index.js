@@ -6,14 +6,15 @@ var usedStates = [];
 var obj = [];
 var color = {};
 var ddStates = {};
+var bubCounter = 0;
 
-   d3.csv("cities-lived.csv", function(d){
+d3.csv("cities-lived.csv", function(d){
         d.forEach(function(i){
             idObj[i.abbr] = i.place;
             idObjAbbr[i.id] = i.abbr;
         });
     });
-    d3.csv("HospInfo.csv", function(d){
+d3.csv("HospInfo.csv", function(d){
         d.forEach(function(datum){
             if(datum.State === undefined || datum.State === "NA"){
                 return;
@@ -133,8 +134,8 @@ function showMap(){
 
 		var key = d3.select(".view1")
 			.append("svg")
-			.attr("width", w-20)
-			.attr("height", h)
+			.attr("width", 70)
+			.attr("height", 170)
 			.attr("class", "legend");
         var legend = key.append("defs")
 			.append("svg:linearGradient")
@@ -176,6 +177,13 @@ function showMap(){
 }
 
 function secondChart(name){
+    if(bubCounter >= 1){
+        var btn = d3.select(".btn");
+        btn.style("display","inline");
+        var btn1 = d3.select(".btn1");
+        btn1.style("display","inline");
+    }
+    bubCounter++;
     d3.csv("HospInfo.csv", function(data){
         var stateObj = {};
         data.forEach(function(ith){
@@ -228,25 +236,123 @@ function secondChart(name){
         
         var radiusScale = d3.scaleSqrt().domain([1,500]).range([10,50]);
         
+        var forceX = d3.forceX(function(d){
+            if(d.type.split(":")[0] === "Critical Access Hospitals State"){
+              return 100;  
+            }else if(d.type.split(":")[0] === "Childrens State"){
+                return 400;
+            }else{
+                return 650;
+            }
+            return 700/2;
+        }).strength(0.25);
+        var forceCollide = d3.forceCollide(function(d){ return radiusScale(d.count) + 5});
+        
         var simulation = d3.forceSimulation()
             .force("forceX", d3.forceX(700/2).strength(0.05))
             .force("forceY", d3.forceY(300/2).strength(0.05))
-            .force("collide", d3.forceCollide(function(d){
-                return radiusScale(d.count)
-            }));
+            .force("collide", forceCollide); 
+        
+        var pObj = {};
+        for(var i = 0; i < obj.length; i++){
+                if(pObj[obj[i].type.split(":")[0]] === undefined){
+                    pObj[obj[i].type.split(":")[0]] = 0;
+                }
+                pObj[obj[i].type.split(":")[0]] += obj[i].count;
+        }
         
         var circles = svg.selectAll("circ")
             .data(obj)
-            .enter().append("circle")
+            .enter()
+            .append("circle")
             .attr('class', 'circ')
-            .style("fill",function(d,i,n){
+            .style("fill","white")
+            .style("stroke",function(d,i,n){
                 var naam = d.type.split(':');
                 return color[naam[1].trim()];
             })
+            .style("stroke-width", '5px')
             .style("opacity", 1.0)
             .attr("r", function(d){
                 return radiusScale(d.count)
+            })
+            .on('mousemove', function(d,i,n){
+                var currentState = idObj[d.type.split(":")[1].trim()];
+                var tooltip = d3.select(".myTooltip")._groups[0];
+                tooltip[0].style.display = 'block';
+                tooltip[0].style.left =  d3.event.pageX + 'px';
+                tooltip[0].style.top = d3.event.pageY +'px';
+                tooltip[0].innerHTML = currentState + ': ' + states[d.type.split(":")[1].trim()]+ " Hospitals";
+            })
+            .on("mouseleave",function(d,i,n){
+                var tooltip = d3.select(".myTooltip")._groups[0];
+                tooltip[0].style.display = 'none';
+            })
+            .on("click",function(d){
+               
             });
+            
+        
+        d3.select("#types").on("click",function(){
+            simulation
+                .force("x", forceX)
+                .alphaTarget(0.5)
+                .restart();
+            
+            var paras = d3.select('.paras');
+            
+            var paragraph = d3.select('.p1')._groups[0];
+            
+            console.log(paragraph[0]);
+            
+            if(paragraph[0] === null){
+            
+                paras.append(function() { 
+                    var p1 = document.createElement('p');
+                    p1.setAttribute("class", "p1");
+                    p1.innerHTML = "Critical Access: " + pObj["Critical Access Hospitals State"];
+                    p1.style.display = "inline";
+                    return p1;
+                });
+
+                paras.append(function() { 
+                    var p1 = document.createElement('p');
+                    p1.setAttribute("class", "p2");
+                    p1.innerHTML = "Childrens: " + pObj["Childrens State"];
+                    p1.style.display = "inline";
+                    return p1;
+                });
+
+                paras.append(function() { 
+                    var p1 = document.createElement('p');
+                    p1.setAttribute("class", "p3");
+                    p1.innerHTML = "Acute Care: " + pObj["Acute Care Hospitals State"];
+                    p1.style.display = "inline";
+                    return p1;
+                });
+            }else{
+                var p1 = d3.select(".p1");
+                p1.style('display', "inline");
+                var p2 = d3.select(".p2");
+                p2.style('display', "inline");
+                var p3 = d3.select(".p3");
+                p3.style('display', "inline");
+            }
+  
+        });
+        
+        d3.select("#combine").on("click",function(){
+            simulation
+                .force("x", d3.forceX(600/2).strength(0.16))
+                .alphaTarget(0.3)
+                .restart();
+            var p1 = d3.select(".p1");
+            p1.style("display","none");
+            var p2 = d3.select(".p2");
+            p2.style("display","none");
+            var p3 = d3.select(".p3");
+            p3.style("display","none");
+        });
         
         simulation.nodes(obj)
             .on('tick', ticked);
@@ -257,6 +363,7 @@ function secondChart(name){
                     return d.x
                 })
                 .attr("cy", function(d){
+                    //console.log(d);
                     return d.y
                 })
         }
@@ -455,3 +562,145 @@ window.onclick = function(event) {
     }
   }
 } 
+
+function collapseTree(source,target,name){
+    var statesT = {};
+    var cArray = [];
+    var countyObj = {};
+    var tObject = {};
+    d3.csv("HospInfo.csv", function(data){
+        data.forEach(function(datum){
+            if(datum.State === name){
+                if(datum["County Name"] == undefined){
+                    return;
+                }
+                if(statesT[datum["County Name"]] == undefined){
+                    statesT[datum["County Name"]] = 1;
+                }
+            }
+        });
+        var stateObj = [];
+        Object.keys(statesT).forEach(function(county){
+            data.forEach(function(datum){
+                if(datum.State === name && datum["County Name"] === county){
+                    if(datum["Hospital Type"] === source || datum["Hospital Ownership"] === target){
+                        if(countyObj[county] === undefined){
+                            countyObj[county] = 0;
+                        }
+                        countyObj[county] += 1;
+                    }
+                }
+            });
+        });
+        Object.keys(countyObj).forEach(function(key){
+           if(key.length > 1){
+               cArray.push({
+                   id: key,
+                   score: countyObj[key],
+                   label: key,
+                   weight: 0.5,
+                   width:0.5 * key.length,
+                   color: rand_color()
+               });
+           } 
+        });
+        
+        function rand_color() {
+            var o = Math.round, r = Math.random, s = 255;
+            return 'rgb(' + r()*s + ',' + r()*s + ',' + r()*s + ')';
+        }
+        
+        plotTree(cArray);
+    });
+}
+
+function plotTree(nData){
+    var data = [];
+    if(nData.length > 25){
+        for(var i = 0; i < 25; i++){
+            data.push(nData[i]);
+        }
+    }else{
+         for(var i = 0; i < nData.length; i++){
+             data.push(nData[i]);
+        }
+    }
+    
+    var width = 300,
+        height = 300,
+        radius = Math.min(width, height) / 2,
+        innerRadius = 0.3 * radius;
+
+    var pie = d3.pie()
+        .sort(null)
+        .value(function(d) { return d.width; });
+
+    var tip = d3.tip()
+      .attr('class', 'd3-tip')
+      .offset([0, 0])
+      .html(function(d) {
+        return d.data.label + ": <span style='color:orangered'>" + d.data.score + "</span>";
+      });
+    
+    var lengthScale = d3.scaleSqrt().domain([0,30]).range([0,20]);
+
+    var arc = d3.arc()
+      .innerRadius(innerRadius)
+      .outerRadius(function (d) {
+          var rad = radius - innerRadius;
+          rad = rad - 40/d.data.score; 
+          return rad + lengthScale(d.data.score);
+      });
+    
+
+    var outlineArc = d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(radius);
+    d3.select(".spinSvg").remove();
+
+    var svg = d3.select(".view4").append("svg")
+        .attr("class","spinSvg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    svg.call(tip);
+    var score = 0;
+
+        //console.log(data);
+          data.forEach(function(d) {
+            d.color  =  d.color;
+            d.score  = +d.score;
+            score   = score + d.score;
+            d.width  = +d.weight;
+            d.label  =  d.label;
+          });
+          // for (var i = 0; i < data.score; i++) { console.log(data[i].id) }
+    
+          var path = svg.selectAll(".solidArc")
+            .data(pie(data))
+            .enter()
+            .append("path")
+            .attr("fill", function(d) { return d.data.color; })
+            .attr("class", "solidArc")
+            .attr("stroke", "gray")
+            .attr("d", arc)
+            .on('mouseover', tip.show)
+            .on('mouseout', tip.hide);
+
+          var outerPath = svg.selectAll(".outlineArc")
+              .data(pie(data))
+            .enter().append("path")
+              .attr("fill", "none")
+              .attr("stroke", "gray")
+              .attr("class", "outlineArc")
+              .attr("d", outlineArc);
+
+          svg.append("svg:text")
+            .attr("class", "aster-score")
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle") // text-align: right
+            .text(Math.round(score))
+            .attr("fill", "white");
+}
