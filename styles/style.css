@@ -197,3 +197,75 @@ body{
   top: 100%;
   left: 0;
 }
+
+
+.cBtn{
+    background-color: green;
+    border-width: 0px;
+    color: white;
+    font-size: 15px;
+    font-weight: 100;
+    border-radius: 10px;
+    position: absolute;
+    display: none;
+}
+.cBtn:hover{
+    background-color: lime;
+    cursor: pointer;
+}
+
+.dropbtn1 { 
+    background-color: green;
+    border-width: 0px;
+    color: white;
+    font-size: 15px;
+    font-weight: 100;
+    border-radius: 10px;
+    position: absolute;
+    margin-left: 180px;
+    display: none;
+}
+
+.dropbtn2 { 
+    background-color: green;
+    border-width: 0px;
+    color: white;
+    font-size: 15px;
+    font-weight: 100;
+    border-radius: 10px;
+    position: absolute;
+    margin-left: 380px;
+    display: none;
+}
+
+.spinSvg{
+    margin-left: 150px;
+    margin-top: 60px;
+}
+.bubbleSvg text{
+    cursor: default;
+}
+.withPara{
+    position: absolute;
+    color: white;
+    margin-left: 310px;
+    margin-top: 0px;
+    display: none;
+}
+
+.dropbtn3 {
+    background-color: green;
+    border-width: 0px;
+    color: white;
+    font-size: 15px;
+    font-weight: 100;
+    border-radius: 10px;
+    position: absolute;
+    margin-left: 520px;
+    display: none;
+}
+.dropbtn3:hover, .dropbtn2:hover, .dropbtn1:hover{ 
+    cursor: pointer;
+}
+
+

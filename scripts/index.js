@@ -223,7 +223,12 @@ function secondChart(name){
             color[name] = random_rgba();
         }
         
-       
+        d3.select('.spinSvg').remove();
+        d3.select('.cBtn').style("display", "none");
+        d3.select('.dropbtn1').style("display", "none");
+        d3.select('.dropbtn2').style("display", "none");
+        d3.select('.withPara').style("display", "none");
+        d3.select('.dropbtn3').style("display", "none");
         d3.select(".bubbleSvg").remove();
         
         var svg = d3.select('.view2')
@@ -234,7 +239,7 @@ function secondChart(name){
             .append('g')
             .attr('transform', 'translate(0,0)');
         
-        var radiusScale = d3.scaleSqrt().domain([1,500]).range([10,50]);
+        var radiusScale = d3.scaleSqrt().domain([1,500]).range([10,40]);
         
         var forceX = d3.forceX(function(d){
             if(d.type.split(":")[0] === "Critical Access Hospitals State"){
@@ -245,7 +250,7 @@ function secondChart(name){
                 return 650;
             }
             return 700/2;
-        }).strength(0.25);
+        }).strength(0.15);
         var forceCollide = d3.forceCollide(function(d){ return radiusScale(d.count) + 5});
         
         var simulation = d3.forceSimulation()
@@ -264,7 +269,9 @@ function secondChart(name){
         var circles = svg.selectAll("circ")
             .data(obj)
             .enter()
-            .append("circle")
+            .append("g");
+        
+        circles.append('circle')
             .attr('class', 'circ')
             .style("fill","white")
             .style("stroke",function(d,i,n){
@@ -275,6 +282,42 @@ function secondChart(name){
             .style("opacity", 1.0)
             .attr("r", function(d){
                 return radiusScale(d.count)
+            })
+            .on('mousemove', function(d,i,n){
+                var currentState = idObj[d.type.split(":")[1].trim()];
+                var tooltip = d3.select(".myTooltip")._groups[0];
+                tooltip[0].style.display = 'block';
+                tooltip[0].style.left =  d3.event.pageX + 'px';
+                tooltip[0].style.top = d3.event.pageY +'px';
+                tooltip[0].innerHTML = currentState + ': ' + states[d.type.split(":")[1].trim()]+ " Hospitals";
+            })
+            .on("mouseleave",function(d,i,n){
+                var tooltip = d3.select(".myTooltip")._groups[0];
+                tooltip[0].style.display = 'none';
+            })
+            .on("click",function(d){
+               
+            });
+        
+        var textSizeScale = d3.scaleSqrt().domain([1,500]).range([7,30]);
+        
+        circles.append('text')
+            .text(function(d){
+            return d.type.split(":")[1].trim();
+            })
+            .attr('stroke', function(d,i,n){
+                var naam = d.type.split(':');
+                return color[naam[1].trim()];
+            })
+            .attr("font-size", function(d){
+                return textSizeScale(d.count)
+            })
+            .attr('transform', function(d){
+                var textSize = d3.select(this).node().getComputedTextLength();
+                var myX = textSize/2;
+                var textHeight = this.attributes[1].value;
+                var myY = textHeight/3;
+                return 'translate(' + -myX + ','+ myY +')';
             })
             .on('mousemove', function(d,i,n){
                 var currentState = idObj[d.type.split(":")[1].trim()];
@@ -343,8 +386,8 @@ function secondChart(name){
         
         d3.select("#combine").on("click",function(){
             simulation
-                .force("x", d3.forceX(600/2).strength(0.16))
-                .alphaTarget(0.3)
+                .force("x", d3.forceX(600/2).strength(0.15))
+                .alphaTarget(0.15)
                 .restart();
             var p1 = d3.select(".p1");
             p1.style("display","none");
@@ -358,6 +401,7 @@ function secondChart(name){
             .on('tick', ticked);
         
         function ticked(){
+            /*
             circles
                 .attr("cx", function(d){
                     return d.x
@@ -365,7 +409,10 @@ function secondChart(name){
                 .attr("cy", function(d){
                     //console.log(d);
                     return d.y
-                })
+                })*/
+            circles.attr("transform", function(d) {
+                return 'translate(' + d.x + ',' + d.y + ')';
+            });
         }
     });
 }
@@ -472,6 +519,7 @@ function thirdChart(name){
                 .on("mouseover", function(d,index,nodes){
                     var curr = d3.select(nodes[index]);
                     curr.style("stroke-opacity","0.8");
+                    curr.style("cursor","pointer");
                 })
                 .on("mousemove", function(d,index,nodes){
                     var curr = d3.select(nodes[index]);
@@ -542,13 +590,10 @@ function newFunc(curr){
     
 }
 
-/* When the user clicks on the button,
-toggle between hiding and showing the dropdown content */
 function myFunction() {
     document.getElementById("myDropdown").classList.toggle("show");
 }
 
-// Close the dropdown menu if the user clicks outside of it
 window.onclick = function(event) {
   if (!event.target.matches('.dropbtn')) {
 
@@ -625,6 +670,7 @@ function plotTree(nData){
              data.push(nData[i]);
         }
     }
+    //d3.select('.cBtn').style("display", 'inline');
     
     var width = 300,
         height = 300,
@@ -703,4 +749,12 @@ function plotTree(nData){
             .attr("text-anchor", "middle") // text-align: right
             .text(Math.round(score))
             .attr("fill", "white");
+}
+
+//shows the comparsion buttons
+function showFunc(){
+//    d3.select('.dropbtn1').style("display", "inline");
+//    d3.select('.dropbtn2').style("display", "inline");
+//    d3.select('.withPara').style("display", "inline");
+//    d3.select('.dropbtn3').style("display", "inline");
 }
